@@ -37,9 +37,13 @@ def load_words() -> List[str]:
             words = json.load(file)
         logger.debug("Words loaded from remote dictionary")
     except FileNotFoundError: # If not, use the local dictionary
-        with open('dictionary.json', 'r', encoding='utf-8-sig') as file:
-            words = json.load(file)
-        logger.debug("Words loaded from local dictionary")
+        try:
+            with open('dictionary.json', 'r', encoding='utf-8-sig') as file:
+                words = json.load(file)
+            logger.debug("Words loaded from local dictionary")
+        except FileNotFoundError:
+            logger.error("No dictionary found in the current directory (where is the dictionary.json file?)")
+            exit(1)
 
     # Ensure all words are strings
     words = [str(word) for word in words]
