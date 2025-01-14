@@ -18,14 +18,14 @@ def split_path_regex(path: str) -> List[str]:
 
 
 def load_words() -> List[str]:
-    # Get the first directory in /opt/ghosts if it exists
-    json_path = os.path.join(
-        '/opt/ghosts', 
-        os.listdir('/opt/ghosts')[0], 
-        'ghosts-client/config/dictionary.json'
-    )
-
     try:
+        # Get the first directory in /opt/ghosts if it exists
+        json_path = os.path.join(
+            '/opt/ghosts', 
+            os.listdir('/opt/ghosts')[0], 
+            'ghosts-client/config/dictionary.json'
+        )
+
         with open(json_path, 'r', encoding='utf-8-sig') as file:
             words = json.load(file)
     except FileNotFoundError: # If not, use the local dictionary
