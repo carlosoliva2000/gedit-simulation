@@ -8,13 +8,16 @@ import string
 import pyperclip
 import re
 
-def split_path_regex(path):
+from typing import List
+
+
+def split_path_regex(path: str) -> List[str]:
     # Regex to split path elements such as "/" or "~"
     pattern = r'(~/|/|[^/]+)'
     return re.findall(pattern, path)
 
 
-def load_words() -> list[str]:
+def load_words() -> List[str]:
     # Get the first directory in /opt/ghosts if it exists
     json_path = os.path.join(
         '/opt/ghosts', 
@@ -33,7 +36,8 @@ def load_words() -> list[str]:
     words = [str(word) for word in words]
     return words
 
-def generate_paragraph(words: list[str]) -> str:
+
+def generate_paragraph(words: List[str]) -> str:
     num_sentences = random.randint(2, 10)  # Number of sentences in the paragraph
     sentences = []
     
@@ -46,12 +50,14 @@ def generate_paragraph(words: list[str]) -> str:
     
     return ' '.join(sentences)
 
-def generate_text(words):
+
+def generate_text(words: List[str]) -> str:
     num_paragraphs = random.randint(2, 4)  # Number of paragraphs in the text
     paragraphs = [generate_paragraph(words) for _ in range(num_paragraphs)]
     return '\n\n'.join(paragraphs)  # Join paragraphs with two newlines
 
-def generate_filename():
+
+def generate_filename() -> str:
     length = random.randint(4, 8)  # Length of the filename
     characters = string.ascii_letters + string.digits  # Mix of letters (upper and lower case) and digits
     filename = ''.join(random.choice(characters) for _ in range(length)) + '.txt'
