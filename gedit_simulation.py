@@ -1,16 +1,35 @@
-import json
-import os
-import random
-import pyautogui
-import subprocess
-import string
-import logging
-import argparse
+try:
+    import json
+    import os
+    import random
+    import pyautogui
+    import subprocess
+    import string
+    import logging
+    import argparse
 
-import pyperclip
-import re
+    import pyperclip
+    import re
 
-from typing import List, Optional
+    from typing import List, Optional
+except Exception as e:
+    import traceback
+    import datetime
+    
+    error_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    error_file = os.path.join(os.path.expanduser("~"), f"gedit-simulation_error_{error_time}.log")
+    with open(error_file, "w") as file:
+        file.write("Date and time: \n")
+        file.write(str(datetime.datetime.now()))
+        file.write("\n\n")
+        file.write("Error: \n")
+        file.write(str(e))
+        file.write("\n\n")
+        file.write("Traceback: \n")
+        file.write(str(traceback.format_exc()))
+        file.write("\n\n")
+        file.write("Environment variables: \n")
+        file.write(str(os.environ))
 
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
