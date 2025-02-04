@@ -1,23 +1,26 @@
+import os
+import json
+import random
+import subprocess
+import string
+import re
+import argparse
+import logging
+
+from typing import List, Optional
+from logging.handlers import RotatingFileHandler
+
+path = os.path.join(os.path.expanduser('~'), ".config", "gedit-simulation")
+os.makedirs(path, exist_ok=True)
+
 try:
-    import json
-    import os
-    import random
     import pyautogui
-    import subprocess
-    import string
-    import logging
-    import argparse
-
     import pyperclip
-    import re
-
-    from typing import List, Optional
-    from logging.handlers import RotatingFileHandler
 except Exception as e:
     import traceback
     import datetime
     
-    error_file = os.path.join(os.path.expanduser("~"), f"error_gedit-simulator.log")
+    error_file = os.path.join(path, "error_gedit-simulation.log")
     with open(error_file, "a") as file:
         file.write("Date and time: \n")
         file.write(str(datetime.datetime.now()))
@@ -180,32 +183,44 @@ def random_execution(args: argparse.Namespace, subparsers: argparse._SubParsersA
 
 
 def delete_process(input_dir: str):
-    # Choose a .txt random file to delete
-    # TODO: add more types or use an argument to determine what to delete
-    files = [f for f in os.listdir(input_dir) if f.endswith('.txt')]
-    if not files:
-        logger.debug(f"No files found in {input_dir}")
-        return
-    
-    file_to_delete = random.choice(files)
+    input_dir = os.path.expanduser(input_dir)
+    if os.path.isfile(input_dir):
+        logger.debug(f"Input directory is a file, using it as a filename")
+        file_to_delete = input_dir
+    else:
+        # Choose a .txt random file to delete
+        # TODO: add more types or use an argument to determine what to delete
+        files = [f for f in os.listdir(input_dir) if f.endswith('.txt')]
+        if not files:
+            logger.debug(f"No files found in {input_dir}")
+            return
+        
+        file_to_delete = random.choice(files)
     logger.debug(f"Deleting {file_to_delete}")
     os.remove(os.path.join(input_dir, file_to_delete))
 
 
 def view_process(input_dir: str, min_time: int, max_time: int, fixed_time: Optional[int] = None):
-    # Choose a .txt random file to view
-    files = [f for f in os.listdir(input_dir) if f.endswith('.txt')]
-    if not files:
-        logger.debug(f"No files found in {input_dir}")
-        return
+    input_dir = os.path.expanduser(input_dir)
+    if os.path.isfile(input_dir):
+        logger.debug(f"Input directory is a file, using it as a filename")
+        file_to_view = input_dir
+    else:
+        logger.debug(f"Input directory is a directory, choosing a random file")
+        # Choose a .txt random file to view
+        files = [f for f in os.listdir(input_dir) if f.endswith('.txt')]
+        if not files:
+            logger.debug(f"No files found in {input_dir}")
+            return
+
+        file_to_view = random.choice(files)
+
+    logger.debug(f"Viewing {file_to_view} for {time} seconds")
     
     if fixed_time:
         time = fixed_time
     else:
         time = random.randint(min_time, max_time)
-    
-    file_to_view = random.choice(files)
-    logger.debug(f"Viewing {file_to_view} for {time} seconds")
 
     # Open gedit
     subprocess.Popen(['gedit', os.path.join(input_dir, file_to_view)])
@@ -236,13 +251,19 @@ def edit_process(
         max_words: int,
         interval: float
     ):
-    # Choose a .txt random file to edit
-    files = [f for f in os.listdir(input_dir) if f.endswith('.txt')]
-    if not files:
-        logger.debug(f"No files found in {input_dir}")
-        return
-    
-    file_to_edit = random.choice(files)
+    input_dir = os.path.expanduser(input_dir)
+    if os.path.isfile(input_dir):
+        logger.debug(f"Input directory is a file, using it as a filename")
+        file_to_edit = input_dir
+    else:
+        logger.debug(f"Input directory is a directory, choosing a random file")
+        # Choose a .txt random file to edit
+        files = [f for f in os.listdir(input_dir) if f.endswith('.txt')]
+        if not files:
+            logger.debug(f"No files found in {input_dir}")
+            return
+        
+        file_to_edit = random.choice(files)
     logger.debug(f"Editing {file_to_edit}")
 
     # Load the words
@@ -299,7 +320,12 @@ def create_process(
 
     # Open gedit
     output_dir = os.path.expanduser(output_dir)
-    output_file = os.path.join(output_dir, random_filename)
+    if os.path.isfile(output_dir):
+        logger.debug(f"Output directory is a file, using it as a filename")
+        output_file = output_dir
+    else:
+        logger.debug(f"Output directory is a directory, appending the filename")
+        output_file = os.path.join(output_dir, random_filename)
     logger.info(f"Creating in {output_file}")
     subprocess.Popen(['gedit', output_file])
     # subprocess.run(['gedit', output_file])
@@ -348,7 +374,7 @@ def main():
     create_parser.add_argument('--interval-between-keystrokes-filepath', type=float, default=0.025, help='Interval (in seconds) between keystrokes when writing the filepath.')
     create_parser.add_argument('--text-generation', type=str, choices=['random'], default='random', help='Text generation method.')
     create_parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
-    create_parser.add_argument('--log', type=str, help='Log directory to save log files to. If it does not exist, it will be created.', default='~/')
+    create_parser.add_argument('--log', type=str, help='Log directory to save log files to. If it does not exist, it will be created.', default=path)
     create_parser.add_argument('--output', '-O', type=str, required=True, help='Output directory to save files to. If not a directory, it will be used as a filename.')
 
     # Subcommand view
@@ -357,8 +383,8 @@ def main():
     view_parser.add_argument('--max-time', type=int, default=30, help='Maximum time (in seconds) to view the file.')
     view_parser.add_argument('--time', '-t', type=int, help='Fixed time (in seconds) to view the file. Overrides --min-time and --max-time.')
     view_parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
-    view_parser.add_argument('--log', type=str, help='Log directory to save log files to. If it does not exist, it will be created.', default='~/')
-    view_parser.add_argument('--input', '-I', type=str, required=True, help='Input directory to read files from.')
+    view_parser.add_argument('--log', type=str, help='Log directory to save log files to. If it does not exist, it will be created.', default=path)
+    view_parser.add_argument('--input', '-I', type=str, required=True, help='Input directory to read files from. If it is a file, it will be used as a filename.')
 
     # Subcommand edit
     edit_parser = subparsers.add_parser('edit', help='Edit an existing file and save changes')
@@ -371,15 +397,15 @@ def main():
     edit_parser.add_argument('--interval-between-keystrokes', type=float, default=0.025, help='Interval (in seconds) between keystrokes when writing the generated text.')
     edit_parser.add_argument('--text-generation', type=str, choices=['random'], default='random', help='Text generation method.')
     edit_parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
-    edit_parser.add_argument('--log', type=str, help='Log directory to save log files to. If it does not exist, it will be created.', default='~/')
-    edit_parser.add_argument('--input', '-I', type=str, required=True, help='Input directory to read files from.')
+    edit_parser.add_argument('--log', type=str, help='Log directory to save log files to. If it does not exist, it will be created.', default=path)
+    edit_parser.add_argument('--input', '-I', type=str, required=True, help='Input directory to read files from. If it is a file, it will be used as a filename.')
     # edit_parser.add_argument('--output', '-O', type=str, required=True, help='Output directory to save files to. If not a directory, it will be used as a filename.')
 
     # Subcommand delete
     delete_parser = subparsers.add_parser('delete', help='Delete a file')
-    delete_parser.add_argument('--log', type=str, help='Log directory to save log files to. If it does not exist, it will be created.', default='~/')
+    delete_parser.add_argument('--log', type=str, help='Log directory to save log files to. If it does not exist, it will be created.', default=path)
     delete_parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
-    delete_parser.add_argument('--input', '-I', type=str, required=True, help='Input directory to read files from.')
+    delete_parser.add_argument('--input', '-I', type=str, required=True, help='Input directory to read files from. If it is a file, it will be used as a filename.')
 
     # Subcommand random
     random_parser = subparsers.add_parser('random', help='Execute a random command based on provided probabilities')
@@ -388,7 +414,7 @@ def main():
     random_parser.add_argument('--edit', '-e', type=int, default=20, help='Probability (in %%) of executing "edit".')
     random_parser.add_argument('--view', '-v', type=int, default=20, help='Probability (in %%) of executing "view".')
     random_parser.add_argument('--delete', '-d', type=int, default=10, help='Probability (in %%) of executing "delete".')
-    random_parser.add_argument('--log', type=str, help='Log directory to save log files to. If it does not exist, it will be created.', default='~/')
+    random_parser.add_argument('--log', type=str, help='Log directory to save log files to. If it does not exist, it will be created.', default=path)
     random_parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
     random_parser.add_argument('--input', '-I', type=str, required=True, help='Input directory to read files from.', )
     random_parser.add_argument('--output', '-O', type=str, required=True, help='Output directory to save files to.')
