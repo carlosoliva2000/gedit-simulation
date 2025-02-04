@@ -214,13 +214,12 @@ def view_process(input_dir: str, min_time: int, max_time: int, fixed_time: Optio
             return
 
         file_to_view = random.choice(files)
-
-    logger.debug(f"Viewing {file_to_view} for {time} seconds")
     
     if fixed_time:
         time = fixed_time
     else:
         time = random.randint(min_time, max_time)
+    logger.debug(f"Viewing {file_to_view} for {time} seconds")
 
     # Open gedit
     subprocess.Popen(['gedit', os.path.join(input_dir, file_to_view)])
