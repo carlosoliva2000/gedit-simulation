@@ -184,7 +184,7 @@ def random_execution(args: argparse.Namespace, subparsers: argparse._SubParsersA
 
 def delete_process(input_dir: str):
     input_dir = os.path.expanduser(input_dir)
-    if os.path.isfile(input_dir):
+    if input_dir.lower().endswith('.txt') or input_dir.lower().endswith('.md'):
         logger.debug(f"Input directory is a file, using it as a filename")
         file_to_delete = input_dir
     else:
@@ -202,7 +202,7 @@ def delete_process(input_dir: str):
 
 def view_process(input_dir: str, min_time: int, max_time: int, fixed_time: Optional[int] = None):
     input_dir = os.path.expanduser(input_dir)
-    if os.path.isfile(input_dir):
+    if input_dir.lower().endswith('.txt') or input_dir.lower().endswith('.md'):
         logger.debug(f"Input directory is a file, using it as a filename")
         file_to_view = input_dir
     else:
@@ -252,7 +252,7 @@ def edit_process(
         interval: float
     ):
     input_dir = os.path.expanduser(input_dir)
-    if os.path.isfile(input_dir):
+    if input_dir.lower().endswith('.txt') or input_dir.lower().endswith('.md'):
         logger.debug(f"Input directory is a file, using it as a filename")
         file_to_edit = input_dir
     else:
@@ -320,7 +320,7 @@ def create_process(
 
     # Open gedit
     output_dir = os.path.expanduser(output_dir)
-    if os.path.isfile(output_dir):
+    if output_dir.lower().endswith('.txt') or output_dir.lower().endswith('.md'):
         logger.debug(f"Output directory is a file, using it as a filename")
         output_file = output_dir
     else:
