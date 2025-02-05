@@ -440,8 +440,6 @@ def main():
     # Parse arguments
     # args = parser.parse_args()
     args, unknown = parser.parse_known_args()
-    if unknown:
-        logger.warning(f"Unknown arguments ignored: {unknown}")
 
     file_handler = RotatingFileHandler(
         os.path.join(os.path.expanduser(args.log), 'gedit-simulation.log'),
@@ -459,6 +457,8 @@ def main():
     else:
         logger.setLevel(logging.INFO)
     logger.info("Starting gedit-simulation")
+    if unknown:
+        logger.warning(f"Unknown arguments ignored: {unknown}")
 
     # In case of random command, choose a random command based on the probabilities
     if args.command == 'random':
