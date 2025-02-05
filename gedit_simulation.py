@@ -7,6 +7,7 @@ import re
 import argparse
 import logging
 
+from sys import exit
 from typing import List, Optional
 from logging.handlers import RotatingFileHandler
 
@@ -437,7 +438,10 @@ def main():
     random_parser.add_argument('remaining_args', nargs=argparse.REMAINDER, help='Remaining arguments for the selected command (see help for each command).')
 
     # Parse arguments
-    args = parser.parse_args()
+    # args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
+    if unknown:
+        logger.warning(f"Unknown arguments ignored: {unknown}")
 
     file_handler = RotatingFileHandler(
         os.path.join(os.path.expanduser(args.log), 'gedit-simulation.log'),
